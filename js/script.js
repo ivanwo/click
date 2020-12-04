@@ -5,7 +5,7 @@ import { OrbitControls } from './OrbitControls.js';
 let camera, controls, scene, renderer, raycaster, gameHolder, INTERSECT;
 
 // Display Settings
-let pixelation = 0.35;
+let pixelation = 0.25;
 
 // Game Item Objects
 let player;
@@ -47,7 +47,7 @@ function init(){
 
     // GAME WORLD
     // ground
-    const gt = new THREE.TextureLoader().load( "./img/concrete.jpg" );
+    const gt = new THREE.TextureLoader().load( "./img/concrete1.jpg" );
     const gg = new THREE.PlaneBufferGeometry( 16000, 16000 );
     const gm = new THREE.MeshPhongMaterial( { color: 0xffffff, map: gt } );
 

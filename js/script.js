@@ -47,7 +47,7 @@ function init(){
 
     // GAME WORLD
     // ground
-    const gt = new THREE.TextureLoader().load( "./img/checker1.jpg" );
+    const gt = new THREE.TextureLoader().load( "./img/concrete.jpg" );
     const gg = new THREE.PlaneBufferGeometry( 16000, 16000 );
     const gm = new THREE.MeshPhongMaterial( { color: 0xffffff, map: gt } );
 

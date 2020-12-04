@@ -1,0 +1,35 @@
+body{
+    margin: 0;
+    font-family: 'Courier New', Courier, monospace;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    cursor: default;
+}
+a{
+    text-decoration: none;
+    color: white;
+}
+header{
+    background-color: black;
+    min-height: 6vh;
+}
+header h1, footer h2{
+    padding: 2px 0;
+    text-align: center;
+    margin:0;
+}
+#game-holder{
+    height: 90vh;
+    cursor: crosshair;
+}
+footer{
+    position:fixed;
+    bottom: 0;
+    left:0;
+    right:0;
+    background-color: black;
+    color: white;
+    text-align: center;
+}

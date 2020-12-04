@@ -9,7 +9,7 @@ let pixelation = 0.25;
 
 // Game Item Objects
 let player;
-let cube;
+let cube, wall, wall2;
 
 // mousey
 let mouse = new THREE.Vector2();
@@ -56,7 +56,20 @@ function init(){
 	ground.material.map.repeat.set( 64, 64 );
 	ground.material.map.wrapS = THREE.RepeatWrapping;
 	ground.material.map.wrapT = THREE.RepeatWrapping;
-	ground.material.map.encoding = THREE.sRGBEncoding;
+    ground.material.map.encoding = THREE.sRGBEncoding;
+    
+    let markTexture = new THREE.TextureLoader().load("./img/brick.jpg");
+    let markGeometry = new THREE.PlaneBufferGeometry(150,50);
+    let markMesh = new THREE.MeshPhongMaterial({color:"blue", map: markTexture});
+    wall = new THREE.Mesh(markGeometry,markMesh);
+    wall2 = new THREE.Mesh(markGeometry,markMesh);
+    wall.userData.clickMessage = "a sturdy looking brick wall";
+    wall2.userData.clickMessage = "a sturdy looking brick wall";
+    wall2.rotation.y = Math.PI;
+    wall.position.set(-20,20,-20);
+    wall2.position.set(-20,20,-20);
+    scene.add(wall);
+    scene.add(wall2);
 
     // meshes and materials
     let coneGeometry = new THREE.ConeGeometry(4,8,6);
@@ -72,6 +85,7 @@ function init(){
         target: new THREE.Vector3()
     };
     scene.add(player);
+    player.position.set(10,0,10);
 
 
     ground.position.set(0,-5,0);

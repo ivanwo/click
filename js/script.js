@@ -9,7 +9,7 @@ let pixelation = 0.25;
 
 // Game Item Objects
 let player;
-let cube, wall, wall2;
+let cube, wall, wall2, manhole;
 
 // mousey
 let mouse = new THREE.Vector2();
@@ -60,16 +60,26 @@ function init(){
     
     let markTexture = new THREE.TextureLoader().load("./img/brick.jpg");
     let markGeometry = new THREE.PlaneBufferGeometry(150,50);
-    let markMesh = new THREE.MeshPhongMaterial({color:"blue", map: markTexture});
+    let markMesh = new THREE.MeshPhongMaterial({color:"gray", map: markTexture});
     wall = new THREE.Mesh(markGeometry,markMesh);
     wall2 = new THREE.Mesh(markGeometry,markMesh);
     wall.userData.clickMessage = "a sturdy looking brick wall";
     wall2.userData.clickMessage = "a sturdy looking brick wall";
     wall2.rotation.y = Math.PI;
-    wall.position.set(-20,20,-20);
-    wall2.position.set(-20,20,-20);
+    wall.position.set(-40,20,-80);
+    wall2.position.set(-40,20,-80);
     scene.add(wall);
     scene.add(wall2);
+
+    let manholeTexture = new THREE.TextureLoader().load("./img/manhole.png");
+    let manholeGeometry = new THREE.PlaneBufferGeometry(20,20);
+    let manholeMesh = new THREE.MeshPhongMaterial({color:"gray",map:manholeTexture});
+    manhole = new THREE.Mesh(manholeGeometry, manholeMesh);
+    //manhole.rotation.x = - Math.PI/2;
+    manhole.userData.clickMessage = "looks dirty, i wouldn't touch it";
+    manhole.position.set(-30,1,30);
+    scene.add(manhole);
+
 
     // meshes and materials
     let coneGeometry = new THREE.ConeGeometry(4,8,6);
@@ -78,7 +88,7 @@ function init(){
     player = new THREE.Mesh(coneGeometry,coneMaterial)
     player.userData = {
         name:"player",
-        clickMessage:"this is you, the player",
+        clickMessage:"i think this is supposed to be you?",
         step: 0,
         path: new THREE.Line3(),
         pathPos: 0,

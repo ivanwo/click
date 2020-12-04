@@ -26,9 +26,10 @@ function init(){
     scene.background = new THREE.Color("lightgrey");
     scene.fog = new THREE.FogExp2( "white", 0.001);
 
-    renderer = new THREE.WebGLRenderer({antialias:true}); // {antialias=true}
+    renderer = new THREE.WebGLRenderer({antialias:true, alpha:true}); // {antialias=true}
     renderer.setPixelRatio(window.devicePixelRatio*pixelation);
     renderer.setSize(gameHolder.clientWidth, gameHolder.clientHeight);
+    renderer.setClearColor( 0x000000, 0 );
 
     camera = new THREE.PerspectiveCamera(60, window.innerWidth/ window.innerHeight, 1, 1000);
     camera.position.set(50,50,50);
@@ -49,7 +50,7 @@ function init(){
     // ground
     const gt = new THREE.TextureLoader().load( "./img/concrete1.jpg" );
     const gg = new THREE.PlaneBufferGeometry( 16000, 16000 );
-    const gm = new THREE.MeshPhongMaterial( { color: 0xffffff, map: gt } );
+    const gm = new THREE.MeshPhongMaterial( { map: gt } );
 
 	const ground = new THREE.Mesh( gg, gm );
 	ground.rotation.x = - Math.PI / 2;
@@ -73,11 +74,11 @@ function init(){
 
     let manholeTexture = new THREE.TextureLoader().load("./img/manhole.png");
     let manholeGeometry = new THREE.PlaneBufferGeometry(20,20);
-    let manholeMesh = new THREE.MeshPhongMaterial({color:"gray",map:manholeTexture});
+    let manholeMesh = new THREE.MeshBasicMaterial({color:"0x000000",map:manholeTexture, transparent:true});
     manhole = new THREE.Mesh(manholeGeometry, manholeMesh);
-    //manhole.rotation.x = - Math.PI/2;
+    manhole.rotation.x = - Math.PI/2;
     manhole.userData.clickMessage = "looks dirty, i wouldn't touch it";
-    manhole.position.set(-30,1,30);
+    manhole.position.set(-30,-4.9,30);
     scene.add(manhole);
 
 

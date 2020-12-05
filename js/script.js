@@ -49,7 +49,7 @@ function init(){
     // GAME WORLD
     // ground
     const gt = new THREE.TextureLoader().load( "./img/concrete1.jpg" );
-    const gg = new THREE.PlaneBufferGeometry( 16000, 16000 );
+    const gg = new THREE.PlaneBufferGeometry( 1600, 1600 );
     const gm = new THREE.MeshPhongMaterial( { map: gt } );
 
 	const ground = new THREE.Mesh( gg, gm );
@@ -58,6 +58,7 @@ function init(){
 	ground.material.map.wrapS = THREE.RepeatWrapping;
 	ground.material.map.wrapT = THREE.RepeatWrapping;
     ground.material.map.encoding = THREE.sRGBEncoding;
+    ground.name= "ground";
     
     let markTexture = new THREE.TextureLoader().load("./img/brick.jpg");
     let markGeometry = new THREE.PlaneBufferGeometry(150,50);
@@ -69,8 +70,19 @@ function init(){
     wall2.rotation.y = Math.PI;
     wall.position.set(-40,20,-80);
     wall2.position.set(-40,20,-80);
+    wall.updateMatrixWorld();
+    wall2.updateMatrixWorld();
+    wall.name="wall";
+    wall2.name="wall2";
     scene.add(wall);
     scene.add(wall2);
+
+    cube = new THREE.Mesh(new THREE.CubeGeometry(10,10,10), new THREE.MeshPhongMaterial({color:"blue", flatShading:true}));
+    scene.add(cube);
+    cube.position.set(-50,0,-10);
+    cube.userData.clickMessage ="do not touch the cube";
+    cube.name="cube";
+    cube.updateMatrixWorld();
 
     let manholeTexture = new THREE.TextureLoader().load("./img/manhole.png");
     let manholeGeometry = new THREE.PlaneBufferGeometry(20,20);
@@ -79,6 +91,7 @@ function init(){
     manhole.rotation.x = - Math.PI/2;
     manhole.userData.clickMessage = "looks dirty, i wouldn't touch it";
     manhole.position.set(-30,-4.9,30);
+    manhole.name="manhole";
     scene.add(manhole);
 
 
@@ -95,6 +108,7 @@ function init(){
         pathPos: 0,
         target: new THREE.Vector3()
     };
+    player.name="player";
     scene.add(player);
     player.position.set(10,0,10);
 
@@ -153,12 +167,17 @@ function mouseUpHandler(event){
             cursorBlip();
             console.log(player);
             player.userData.target = new THREE.Vector3(intersects[0].point.x,0,intersects[0].point.z);
+            //console.log(somethingInTheWay(player.position,player.userData.target));
             document.getElementById("game-message").innerText = "we movin'";
             console.log(intersects[0].point.x +"    " +intersects[0].point.z);
-            player.userData.path = new THREE.Line3();
-            player.userData.path.set(player.position, player.userData.target);
-            player.userData.step = 0.5/player.userData.path.distance();
-            player.userData.pathPos = 0;
+            somethingInTheWay(player.userData.target, player.position);
+            //if(!somethingInTheWay(player.position,player.userData.target)){
+                player.userData.path = new THREE.Line3();
+                player.userData.path.set(player.position, player.userData.target);
+                player.userData.step = 0.5/player.userData.path.distance();
+                player.userData.pathPos = 0;
+            //}
+            
         }
         else if(intersects.length > 1){
             for(let item of intersects){
@@ -172,6 +191,14 @@ function mouseUpHandler(event){
     else{
         console.log("drag");
     }
+}
+//  ? ? ? ? ? ? ? 
+function somethingInTheWay(start, direction){
+    start.y++;
+    direction.y++;
+    let pathRay = new THREE.Raycaster(start, direction);
+    console.log(pathRay.intersectObjects(scene.children));
+    return pathRay.intersectObjects([cube, wall,wall2]);
 }
 function cursorBlip(){
     gameHolder.style.cursor = "cell";

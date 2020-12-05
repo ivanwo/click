@@ -170,13 +170,13 @@ function mouseUpHandler(event){
             //console.log(somethingInTheWay(player.position,player.userData.target));
             document.getElementById("game-message").innerText = "we movin'";
             console.log(intersects[0].point.x +"    " +intersects[0].point.z);
-            somethingInTheWay(player.userData.target, player.position);
-            //if(!somethingInTheWay(player.position,player.userData.target)){
+            //somethingInTheWay( player.position, player.userData.target);
+            if(!somethingInTheWay(player.position,player.userData.target)){
                 player.userData.path = new THREE.Line3();
                 player.userData.path.set(player.position, player.userData.target);
                 player.userData.step = 0.5/player.userData.path.distance();
                 player.userData.pathPos = 0;
-            //}
+            }
             
         }
         else if(intersects.length > 1){
@@ -194,11 +194,19 @@ function mouseUpHandler(event){
 }
 //  ? ? ? ? ? ? ? 
 function somethingInTheWay(start, direction){
-    start.y++;
-    direction.y++;
-    let pathRay = new THREE.Raycaster(start, direction);
-    console.log(pathRay.intersectObjects(scene.children));
-    return pathRay.intersectObjects([cube, wall,wall2]);
+    let pathRay = new THREE.Raycaster(start.clone(), direction.clone().normalize(), 0, direction.distanceTo(start));
+    console.log(pathRay);
+    if(pathRay.intersectObjects([cube,wall,wall2]).length > 0) {
+        console.log("blocked");
+        document.getElementById("game-message").innerText = "there appears to be something in the way";
+        console.log(pathRay.intersectObjects([cube,wall,wall2]));
+        return true;
+    }
+    else {
+        console.log("onward");
+        return false;
+    }
+    //return pathRay.intersectObjects([cube, wall,wall2]);
 }
 function cursorBlip(){
     gameHolder.style.cursor = "cell";
@@ -218,7 +226,7 @@ function mouseMoveHandler(event){
 }
 function playerGoForward(){
     if(player.userData.pathPos < 1){
-        //player.lookAt(player.userData.target);
+        player.lookAt(player.userData.target);
         //player.translateOnAxis(player.userData.target, 0.01);
         let newPosition = new THREE.Vector3;
         player.userData.path.at(player.userData.pathPos, newPosition);

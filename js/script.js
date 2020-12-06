@@ -131,6 +131,7 @@ function init(){
         pathPos: 0,
         target: new THREE.Vector3()
     };
+    player.visible = false;
     player.name="player";
     scene.add(player);
     scene.add(playerGhost);
@@ -288,8 +289,8 @@ function playerGoForward(){
         camera.position.set(camera.position.x + xDif,camera.position.y + yDif, camera.position.z + zDif);
         player.position.set(newPosition.x,newPosition.y,newPosition.z);
         if(scene.getObjectByName("wolf")!=undefined){
-            scene.getObjectByName("wolf").lookAt(player.userData.target);
-            scene.getObjectByName("wolf").position.set(newPosition.x,0,newPosition.z);
+            scene.getObjectByName("wolf").lookAt(newPosition);
+            scene.getObjectByName("wolf").position.set(newPosition.x,-1,newPosition.z);
         }
         player.userData.pathPos += player.userData.step;
     }

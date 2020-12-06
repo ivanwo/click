@@ -21,6 +21,7 @@ init();
 animate();
 
 function init(){
+    console.log(localStorage["item"]==undefined);
     gameHolder = document.getElementById("game-holder");
     // initialize scene, renderer, and camera
     raycaster = new THREE.Raycaster();
@@ -61,24 +62,6 @@ function init(){
 	ground.material.map.wrapT = THREE.RepeatWrapping;
     ground.material.map.encoding = THREE.sRGBEncoding;
     ground.name= "ground";
-
-    const geometry = new THREE.CylinderBufferGeometry( 0, 10, 30, 4, 1 );
-    const material = new THREE.MeshPhongMaterial( {  map: gt } );
-
-	for ( let i = 0; i < 500; i ++ ) {
-        let geometry = new THREE.CylinderBufferGeometry( 0, 10, Math.random()*60, 4, 1 );
-		const mesh = new THREE.Mesh( geometry, material );
-		mesh.position.x = Math.random() * 1600 - 800;
-		mesh.position.y = 0;
-        mesh.position.z = Math.random() * 1600 - 800;
-        mesh.material.map.repeat.set( 64, 64 );
-        mesh.material.map.wrapS = THREE.RepeatWrapping;
-        mesh.material.map.wrapT = THREE.RepeatWrapping;
-        mesh.updateMatrix();
-        mesh.userData.clickMessage = "cone?";
-		mesh.matrixAutoUpdate = false;
-		scene.add( mesh );
-	}
     
     let markTexture = new THREE.TextureLoader().load("./img/brick.jpg");
     let markGeometry = new THREE.PlaneBufferGeometry(150,50);
@@ -97,6 +80,7 @@ function init(){
     scene.add(wall);
     scene.add(wall2);
 
+    //wolff
     const loader = new FBXLoader();
 	loader.load( './models/Wolf.fbx', function ( object ) {
         object.position.set(-50,0,-40);
@@ -104,9 +88,10 @@ function init(){
         object.lookAt(player.position);
         object.scale.set(0.3,0.3,0.3);
         wolf = object;
+        wolf.userData.clickMessage = "doggie";
 		scene.add( wolf);
-	    });
-    console.log(wolf);
+        });
+        
     let crateTexture = new THREE.TextureLoader().load("./img/crate.jpg");
     cube = new THREE.Mesh(new THREE.CubeGeometry(15,15,15), new THREE.MeshPhongMaterial({flatShading:true, map:crateTexture}));
     cube2 = new THREE.Mesh(new THREE.CubeGeometry(15,15,15), new THREE.MeshPhongMaterial({flatShading:true, map:crateTexture}));
@@ -131,10 +116,10 @@ function init(){
     manhole.name="manhole";
     scene.add(manhole);
 
-    touchables = [wall,wall2,cube,cube2];
     // meshes and materials
     let coneGeometry = new THREE.ConeGeometry(4,8,6);
     let coneMaterial = new THREE.MeshPhongMaterial({color:"blue", flatShading:true});
+    
     // arranging the stuff
     playerGhost = new THREE.Mesh(coneGeometry,new THREE.MeshPhongMaterial({ color:"red",wireframe:true, visible:false}));
     player = new THREE.Mesh(coneGeometry,coneMaterial)
@@ -151,7 +136,6 @@ function init(){
     scene.add(playerGhost);
     player.position.set(10,0,10);
 
-
     ground.position.set(0,-5,0);
     // lights
 
@@ -167,6 +151,25 @@ function init(){
     //ascene.add( dirLight2 );
     scene.add( ambientLight );
 
+    touchables = [wall,wall2,cube,cube2];
+    const geometry = new THREE.CylinderBufferGeometry( 0, 10, 30, 4, 1 );
+    const material = new THREE.MeshPhongMaterial( {  map: gt } );
+
+	for ( let i = 0; i < 100; i ++ ) {
+        let geometry = new THREE.CylinderBufferGeometry( 0, 10, Math.random()*60, 4, 1 );
+		const mesh = new THREE.Mesh( geometry, material );
+		mesh.position.x = Math.random() * 1600 - 800;
+		mesh.position.y = 0;
+        mesh.position.z = Math.random() * 1600 - 800;
+        mesh.material.map.repeat.set( 64, 64 );
+        mesh.material.map.wrapS = THREE.RepeatWrapping;
+        mesh.material.map.wrapT = THREE.RepeatWrapping;
+        mesh.updateMatrix();
+        mesh.userData.clickMessage = "cone?";
+        mesh.matrixAutoUpdate = false;
+        touchables.push(mesh);
+		scene.add( mesh );
+	}
     // interact with the outer page
     // add game eventlisteners to the gameHolder
     gameHolder.appendChild(renderer.domElement);
@@ -229,20 +232,8 @@ function mouseUpHandler(event){
         //console.log("drag");
     }
 }
-//  ? ? ? ? ? ? ? 
+//  detects if an 'object' is in the way of a planned path
 function somethingInTheWay(start, direction){
-    /*
-    let pathRay = new THREE.Raycaster(player.position.clone(), direction.clone().normalize(), 0.1, direction.distanceTo(start)-0.25);
-    console.log(pathRay);
-    if(pathRay.intersectObjects(touchables).length > 0) {
-        document.getElementById("game-message").innerText = "there appears to be something in the way";
-        console.log(pathRay.intersectObjects(touchables));
-        return true;
-    }
-    else {
-        document.getElementById("game-message").innerText = "on the move";
-        return false;
-    }*/
     let hit = false;
     playerGhost.position.set(start.clone());
     let walkLine = new THREE.Line3();
@@ -285,7 +276,6 @@ function mouseMoveHandler(event){
 function playerGoForward(){
     if(player.userData.pathPos < 1){
         player.lookAt(player.userData.target);
-        //player.translateOnAxis(player.userData.target, 0.01);
         let newPosition = new THREE.Vector3;
         player.userData.path.at(player.userData.pathPos, newPosition);
         let xDif = newPosition.x - player.position.x;

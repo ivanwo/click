@@ -1,5 +1,6 @@
 import * as THREE from './three.module.js';
 import { OrbitControls } from './OrbitControls.js';
+import { FBXLoader } from "./FBXLoader.js";
 
 // Global Scene variables
 let camera, controls, scene, renderer, raycaster, gameHolder, INTERSECT;
@@ -9,7 +10,7 @@ let pixelation = 0.35;
 
 // Game Item Objects
 let player, playerGhost;
-let cube, cube2, wall, wall2, manhole;
+let cube, cube2, wall, wall2, manhole, wolf;
 let touchables;
 
 // mouse y
@@ -60,6 +61,24 @@ function init(){
 	ground.material.map.wrapT = THREE.RepeatWrapping;
     ground.material.map.encoding = THREE.sRGBEncoding;
     ground.name= "ground";
+
+    const geometry = new THREE.CylinderBufferGeometry( 0, 10, 30, 4, 1 );
+    const material = new THREE.MeshPhongMaterial( {  map: gt } );
+
+	for ( let i = 0; i < 500; i ++ ) {
+        let geometry = new THREE.CylinderBufferGeometry( 0, 10, Math.random()*60, 4, 1 );
+		const mesh = new THREE.Mesh( geometry, material );
+		mesh.position.x = Math.random() * 1600 - 800;
+		mesh.position.y = 0;
+        mesh.position.z = Math.random() * 1600 - 800;
+        mesh.material.map.repeat.set( 64, 64 );
+        mesh.material.map.wrapS = THREE.RepeatWrapping;
+        mesh.material.map.wrapT = THREE.RepeatWrapping;
+        mesh.updateMatrix();
+        mesh.userData.clickMessage = "cone?";
+		mesh.matrixAutoUpdate = false;
+		scene.add( mesh );
+	}
     
     let markTexture = new THREE.TextureLoader().load("./img/brick.jpg");
     let markGeometry = new THREE.PlaneBufferGeometry(150,50);
@@ -78,14 +97,25 @@ function init(){
     scene.add(wall);
     scene.add(wall2);
 
-    cube = new THREE.Mesh(new THREE.CubeGeometry(10,10,10), new THREE.MeshPhongMaterial({color:"blue", flatShading:true}));
-    cube2 = new THREE.Mesh(new THREE.CubeGeometry(10,10,10), new THREE.MeshPhongMaterial({color:"blue", flatShading:true}));
+    const loader = new FBXLoader();
+	loader.load( './models/Wolf.fbx', function ( object ) {
+        object.position.set(-50,0,-40);
+        //console.log(object);
+        object.lookAt(player.position);
+        object.scale.set(0.3,0.3,0.3);
+        wolf = object;
+		scene.add( wolf);
+	    });
+    console.log(wolf);
+    let crateTexture = new THREE.TextureLoader().load("./img/crate.jpg");
+    cube = new THREE.Mesh(new THREE.CubeGeometry(15,15,15), new THREE.MeshPhongMaterial({flatShading:true, map:crateTexture}));
+    cube2 = new THREE.Mesh(new THREE.CubeGeometry(15,15,15), new THREE.MeshPhongMaterial({flatShading:true, map:crateTexture}));
     scene.add(cube);
-    cube.position.set(-50,0,-10);
+    cube.position.set(-50,4,-10);
     scene.add(cube2);
-    cube2.position.set(50,0,-10);
-    cube.userData.clickMessage ="do not touch the cube";
-    cube.userData.clickMessage ="do not touch either cube";
+    cube2.position.set(50,4,-10);
+    cube.userData.clickMessage ="looks like a sturdy wooden crate";
+    cube2.userData.clickMessage ="who's leaving all these crates around, anyway?";
     cube.name="cube";
     cube2.name="cube2";
     cube.updateMatrixWorld();
@@ -217,7 +247,7 @@ function somethingInTheWay(start, direction){
     playerGhost.position.set(start.clone());
     let walkLine = new THREE.Line3();
     walkLine.set(start, direction);
-    for(let i = 0; i < 1; i+=0.0001){
+    for(let i = 0; i < 1; i+=0.001){
         let thisSpot = new THREE.Vector3();
         walkLine.at(i,thisSpot);
         playerGhost.position.set(thisSpot.x, thisSpot.y,thisSpot.z);
@@ -233,8 +263,7 @@ function somethingInTheWay(start, direction){
                 hit = true;
         }	
     }
-    let message = (hit ? "there appears to be something in the way" : "on the move");
-    document.getElementById("game-message").innerText =message;
+    document.getElementById("game-message").innerText = hit ? "there appears to be something in the way" : "on the move";
     return hit;
 }
 function cursorBlip(){

@@ -152,22 +152,6 @@ function init(){
     touchables = [wall,wall2,cube,cube2];
     const geometry = new THREE.CylinderBufferGeometry( 0, 10, 30, 4, 1 );
     const material = new THREE.MeshPhongMaterial( {  map: gt } );
-
-	for ( let i = 0; i < 100; i ++ ) {
-        let geometry = new THREE.CylinderBufferGeometry( 0, 10, Math.random()*60, 4, 1 );
-		const mesh = new THREE.Mesh( geometry, material );
-		mesh.position.x = Math.random() * 1600 - 800;
-		mesh.position.y = 0;
-        mesh.position.z = Math.random() * 1600 - 800;
-        mesh.material.map.repeat.set( 64, 64 );
-        mesh.material.map.wrapS = THREE.RepeatWrapping;
-        mesh.material.map.wrapT = THREE.RepeatWrapping;
-        mesh.updateMatrix();
-        mesh.userData.clickMessage = "cone?";
-        mesh.matrixAutoUpdate = false;
-        touchables.push(mesh);
-		scene.add( mesh );
-    }
     
     for(let i = 0; i < 50; i++){
         let size = Math.random() * 150;

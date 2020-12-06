@@ -5,13 +5,14 @@ import { OrbitControls } from './OrbitControls.js';
 let camera, controls, scene, renderer, raycaster, gameHolder, INTERSECT;
 
 // Display Settings
-let pixelation = 0.25;
+let pixelation = 0.35;
 
 // Game Item Objects
-let player;
-let cube, wall, wall2, manhole;
+let player, playerGhost;
+let cube, cube2, wall, wall2, manhole;
+let touchables;
 
-// mousey
+// mouse y
 let mouse = new THREE.Vector2();
 let mousePos;
 
@@ -78,11 +79,17 @@ function init(){
     scene.add(wall2);
 
     cube = new THREE.Mesh(new THREE.CubeGeometry(10,10,10), new THREE.MeshPhongMaterial({color:"blue", flatShading:true}));
+    cube2 = new THREE.Mesh(new THREE.CubeGeometry(10,10,10), new THREE.MeshPhongMaterial({color:"blue", flatShading:true}));
     scene.add(cube);
     cube.position.set(-50,0,-10);
+    scene.add(cube2);
+    cube2.position.set(50,0,-10);
     cube.userData.clickMessage ="do not touch the cube";
+    cube.userData.clickMessage ="do not touch either cube";
     cube.name="cube";
+    cube2.name="cube2";
     cube.updateMatrixWorld();
+    cube2.updateMatrixWorld();
 
     let manholeTexture = new THREE.TextureLoader().load("./img/manhole.png");
     let manholeGeometry = new THREE.PlaneBufferGeometry(20,20);
@@ -94,11 +101,12 @@ function init(){
     manhole.name="manhole";
     scene.add(manhole);
 
-
+    touchables = [wall,wall2,cube,cube2];
     // meshes and materials
     let coneGeometry = new THREE.ConeGeometry(4,8,6);
     let coneMaterial = new THREE.MeshPhongMaterial({color:"blue", flatShading:true});
     // arranging the stuff
+    playerGhost = new THREE.Mesh(coneGeometry,new THREE.MeshPhongMaterial({ color:"red",wireframe:true, visible:false}));
     player = new THREE.Mesh(coneGeometry,coneMaterial)
     player.userData = {
         name:"player",
@@ -110,6 +118,7 @@ function init(){
     };
     player.name="player";
     scene.add(player);
+    scene.add(playerGhost);
     player.position.set(10,0,10);
 
 
@@ -132,9 +141,9 @@ function init(){
     // add game eventlisteners to the gameHolder
     gameHolder.appendChild(renderer.domElement);
     gameHolder.addEventListener('mousedown', mouseDownHandler, false);
-    gameHolder.addEventListener('touchdown', mouseDownHandler, false);
+    gameHolder.addEventListener('touchend', mouseDownHandler, false);
     gameHolder.addEventListener('mouseup', mouseUpHandler, false);
-    gameHolder.addEventListener('touchup', mouseUpHandler, false);
+    gameHolder.addEventListener('touchstart', mouseUpHandler, false);
     gameHolder.addEventListener('mousemove', mouseMoveHandler, false);
 
     window.addEventListener('resize', onWindowResize, false);
@@ -153,7 +162,7 @@ function diff (num1, num2) {
 function mouseUpHandler(event){
     let distance = diff(event.clientX, mousePos.x) + diff(event.clientY, mousePos.y);
     if(distance < 20){
-        console.log("click");
+        //console.log("click");
         mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
         mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
@@ -165,12 +174,10 @@ function mouseUpHandler(event){
                 setTimeout(_=> {gameHolder.style.cursor = "crosshair";} ,500);
             console.log(intersects);
             cursorBlip();
-            console.log(player);
+            //console.log(player);
             player.userData.target = new THREE.Vector3(intersects[0].point.x,0,intersects[0].point.z);
-            //console.log(somethingInTheWay(player.position,player.userData.target));
-            document.getElementById("game-message").innerText = "we movin'";
             console.log(intersects[0].point.x +"    " +intersects[0].point.z);
-            //somethingInTheWay( player.position, player.userData.target);
+            //console.log(somethingInTheWay(player.position, player.userData.target));
             if(!somethingInTheWay(player.position,player.userData.target)){
                 player.userData.path = new THREE.Line3();
                 player.userData.path.set(player.position, player.userData.target);
@@ -189,24 +196,46 @@ function mouseUpHandler(event){
         }
     }
     else{
-        console.log("drag");
+        //console.log("drag");
     }
 }
 //  ? ? ? ? ? ? ? 
 function somethingInTheWay(start, direction){
-    let pathRay = new THREE.Raycaster(start.clone(), direction.clone().normalize(), 0, direction.distanceTo(start));
+    /*
+    let pathRay = new THREE.Raycaster(player.position.clone(), direction.clone().normalize(), 0.1, direction.distanceTo(start)-0.25);
     console.log(pathRay);
-    if(pathRay.intersectObjects([cube,wall,wall2]).length > 0) {
-        console.log("blocked");
+    if(pathRay.intersectObjects(touchables).length > 0) {
         document.getElementById("game-message").innerText = "there appears to be something in the way";
-        console.log(pathRay.intersectObjects([cube,wall,wall2]));
+        console.log(pathRay.intersectObjects(touchables));
         return true;
     }
     else {
-        console.log("onward");
+        document.getElementById("game-message").innerText = "on the move";
         return false;
+    }*/
+    let hit = false;
+    playerGhost.position.set(start.clone());
+    let walkLine = new THREE.Line3();
+    walkLine.set(start, direction);
+    for(let i = 0; i < 1; i+=0.0001){
+        let thisSpot = new THREE.Vector3();
+        walkLine.at(i,thisSpot);
+        playerGhost.position.set(thisSpot.x, thisSpot.y,thisSpot.z);
+        for (var vertexIndex = 0; vertexIndex < playerGhost.geometry.vertices.length; vertexIndex++)
+        {		
+            var localVertex = playerGhost.geometry.vertices[vertexIndex].clone();
+            var globalVertex = localVertex.applyMatrix4( playerGhost.matrix );
+            var directionVector = globalVertex.sub( playerGhost.position );
+            
+            var ray = new THREE.Raycaster( thisSpot, directionVector.clone().normalize() );
+            var collisionResults = ray.intersectObjects( touchables );
+            if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) 
+                hit = true;
+        }	
     }
-    //return pathRay.intersectObjects([cube, wall,wall2]);
+    let message = (hit ? "there appears to be something in the way" : "on the move");
+    document.getElementById("game-message").innerText =message;
+    return hit;
 }
 function cursorBlip(){
     gameHolder.style.cursor = "cell";
@@ -236,15 +265,7 @@ function playerGoForward(){
         camera.position.set(camera.position.x + xDif,camera.position.y + yDif, camera.position.z + zDif);
         player.position.set(newPosition.x,newPosition.y,newPosition.z);
         player.userData.pathPos += player.userData.step;
-        //player.userData.path.set(player.position, player.userData.target);
-        //player.userData.step = 0.5/playerPath.distance();
-        //player.userData.pathPos;
     }
-    else if(player.userData.pathPos > 1 ){
-        //player.userData.target = new THREE.Vector3();
-        //player.userData.pathPos = 0;
-    }
-    //
 }
 
 function onWindowResize(){

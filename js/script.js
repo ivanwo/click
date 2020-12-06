@@ -84,10 +84,10 @@ function init(){
     const loader = new FBXLoader();
 	loader.load( './models/Wolf.fbx', function ( object ) {
         object.position.set(-50,0,-40);
-        //console.log(object);
         object.lookAt(player.position);
         object.scale.set(0.3,0.3,0.3);
         wolf = object;
+        wolf.name="wolf";
         wolf.userData.clickMessage = "doggie";
 		scene.add( wolf);
         });
@@ -178,9 +178,13 @@ function init(){
     gameHolder.addEventListener('mouseup', mouseUpHandler, false);
     gameHolder.addEventListener('touchstart', mouseUpHandler, false);
     gameHolder.addEventListener('mousemove', mouseMoveHandler, false);
+    gameHolder.addEventListener('dblclick', showWolf, false);
 
     window.addEventListener('resize', onWindowResize, false);
     animate();
+}
+function showWolf(){
+    console.log(scene.getObjectByName("wolf"));
 }
 function mouseDownHandler(event){
     mousePos = {x: event.clientX, y:event.clientY};
@@ -283,6 +287,10 @@ function playerGoForward(){
         let zDif = newPosition.z - player.position.z;
         camera.position.set(camera.position.x + xDif,camera.position.y + yDif, camera.position.z + zDif);
         player.position.set(newPosition.x,newPosition.y,newPosition.z);
+        if(scene.getObjectByName("wolf")!=undefined){
+            scene.getObjectByName("wolf").lookAt(player.userData.target);
+            scene.getObjectByName("wolf").position.set(newPosition.x,0,newPosition.z);
+        }
         player.userData.pathPos += player.userData.step;
     }
 }

@@ -116,22 +116,19 @@ function init(){
     manhole.name="manhole";
     scene.add(manhole);
 
-    // meshes and materials
-    let coneGeometry = new THREE.ConeGeometry(4,8,6);
-    let coneMaterial = new THREE.MeshPhongMaterial({color:"blue", flatShading:true});
-    
     // arranging the stuff
-    playerGhost = new THREE.Mesh(coneGeometry,new THREE.MeshPhongMaterial({ color:"red",wireframe:true, visible:false}));
-    player = new THREE.Mesh(coneGeometry,coneMaterial)
+    playerGhost = new THREE.Mesh(new THREE.CubeGeometry(8,25,8), new THREE.MeshPhongMaterial({flatShading:true, wireframe:true}));
+    player = new THREE.Mesh(new THREE.CubeGeometry(8,25,8), new THREE.MeshPhongMaterial({flatShading:true, wireframe:true}));
     player.userData = {
         name:"player",
-        clickMessage:"i think this is supposed to be you?",
+        clickMessage:"doggie!",
         step: 0,
         path: new THREE.Line3(),
         pathPos: 0,
         target: new THREE.Vector3()
     };
     player.visible = false;
+    playerGhost.visible = false;
     player.name="player";
     scene.add(player);
     scene.add(playerGhost);
@@ -170,7 +167,18 @@ function init(){
         mesh.matrixAutoUpdate = false;
         touchables.push(mesh);
 		scene.add( mesh );
-	}
+    }
+    
+    for(let i = 0; i < 50; i++){
+        let size = Math.random() * 150;
+        let box = new THREE.Mesh(new THREE.CubeGeometry(size,size,size), new THREE.MeshPhongMaterial({flatShading:true, map:crateTexture}));
+        box.position.x = Math.random() * 1600 - 800;
+		box.position.y = size*0.4;
+        box.position.z = Math.random() * 1600 - 800;
+        box.userData.clickMessage = "smells like burnt pine";
+        touchables.push(box);
+        scene.add(box);
+    }
     // interact with the outer page
     // add game eventlisteners to the gameHolder
     gameHolder.appendChild(renderer.domElement);
@@ -179,13 +187,9 @@ function init(){
     gameHolder.addEventListener('mouseup', mouseUpHandler, false);
     gameHolder.addEventListener('touchstart', mouseUpHandler, false);
     gameHolder.addEventListener('mousemove', mouseMoveHandler, false);
-    gameHolder.addEventListener('dblclick', showWolf, false);
 
     window.addEventListener('resize', onWindowResize, false);
     animate();
-}
-function showWolf(){
-    console.log(scene.getObjectByName("wolf"));
 }
 function mouseDownHandler(event){
     mousePos = {x: event.clientX, y:event.clientY};
@@ -227,7 +231,12 @@ function mouseUpHandler(event){
         else if(intersects.length > 1){
             for(let item of intersects){
                 if(item.object.userData.clickMessage!=undefined){
-                    document.getElementById("game-message").innerText = item.object.userData.clickMessage;
+                    if(item.object.position.distanceTo(player.position) < 150)
+                        document.getElementById("game-message").innerText = item.object.userData.clickMessage;
+                    else
+                        document.getElementById("game-message").innerText = "you can't tell what that is from this far away";
+                    //perhaps have the user look at the thing as well? have to do more 
+                    // raycasting to get the exact point though...
                 }
             }
             console.log(intersects);
@@ -280,14 +289,15 @@ function mouseMoveHandler(event){
 }
 function playerGoForward(){
     if(player.userData.pathPos < 1){
-        player.lookAt(player.userData.target);
         let newPosition = new THREE.Vector3;
         player.userData.path.at(player.userData.pathPos, newPosition);
+        newPosition.y = -1;
         let xDif = newPosition.x - player.position.x;
         let yDif = newPosition.y - player.position.y;
         let zDif = newPosition.z - player.position.z;
         camera.position.set(camera.position.x + xDif,camera.position.y + yDif, camera.position.z + zDif);
         player.position.set(newPosition.x,newPosition.y,newPosition.z);
+        player.lookAt(newPosition);
         if(scene.getObjectByName("wolf")!=undefined){
             scene.getObjectByName("wolf").lookAt(newPosition);
             scene.getObjectByName("wolf").position.set(newPosition.x,-1,newPosition.z);

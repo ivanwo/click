@@ -64,21 +64,14 @@ function init(){
     ground.name= "ground";
     
     let markTexture = new THREE.TextureLoader().load("./img/brick.jpg");
-    let markGeometry = new THREE.PlaneBufferGeometry(150,50);
+    let markGeometry = new THREE.CubeGeometry(150,50,5);
     let markMesh = new THREE.MeshPhongMaterial({color:"gray", map: markTexture});
     wall = new THREE.Mesh(markGeometry,markMesh);
-    wall2 = new THREE.Mesh(markGeometry,markMesh);
     wall.userData.clickMessage = "a sturdy looking brick wall";
-    wall2.userData.clickMessage = "a sturdy looking brick wall";
-    wall2.rotation.y = Math.PI;
     wall.position.set(-40,20,-80);
-    wall2.position.set(-40,20,-80);
     wall.updateMatrixWorld();
-    wall2.updateMatrixWorld();
     wall.name="wall";
-    wall2.name="wall2";
     scene.add(wall);
-    scene.add(wall2);
 
     //wolff
     const loader = new FBXLoader();
@@ -86,6 +79,7 @@ function init(){
         object.position.set(-50,0,-40);
         object.lookAt(player.position);
         object.scale.set(0.3,0.3,0.3);
+        object.material = markTexture;
         wolf = object;
         wolf.name="wolf";
         wolf.userData.clickMessage = "doggie";
@@ -149,13 +143,13 @@ function init(){
     //ascene.add( dirLight2 );
     scene.add( ambientLight );
 
-    touchables = [wall,wall2,cube,cube2];
+    touchables = [wall,cube,cube2];
     const geometry = new THREE.CylinderBufferGeometry( 0, 10, 30, 4, 1 );
     const material = new THREE.MeshPhongMaterial( {  map: gt } );
     
-    for(let i = 0; i < 50; i++){
+    for(let i = 0; i < 100; i++){
         let size = Math.random() * 150;
-        let box = new THREE.Mesh(new THREE.CubeGeometry(size,size,size), new THREE.MeshPhongMaterial({flatShading:true, map:crateTexture}));
+        let box = new THREE.Mesh(new THREE.CubeGeometry(Math.random() * 150,Math.random() * 150,Math.random() * 150), new THREE.MeshPhongMaterial({flatShading:true, map:crateTexture}));
         box.position.x = Math.random() * 1600 - 800;
 		box.position.y = size*0.4;
         box.position.z = Math.random() * 1600 - 800;
@@ -171,9 +165,20 @@ function init(){
     gameHolder.addEventListener('mouseup', mouseUpHandler, false);
     gameHolder.addEventListener('touchstart', mouseUpHandler, false);
     gameHolder.addEventListener('mousemove', mouseMoveHandler, false);
+    document.getElementById("jank-o-meter").addEventListener('change', jank, false);
+    document.getElementById("hitbox-toggle").addEventListener('change', hitbox, false);
 
     window.addEventListener('resize', onWindowResize, false);
     animate();
+}
+function jank(event){
+    pixelation = document.getElementById('jank-o-meter').value*0.08;
+    console.log(pixelation);
+    renderer.setPixelRatio(window.devicePixelRatio*pixelation);
+}
+function hitbox(){
+    player.visible = !player.visible;
+    playerGhost.visible = !playerGhost.visible;
 }
 function mouseDownHandler(event){
     mousePos = {x: event.clientX, y:event.clientY};

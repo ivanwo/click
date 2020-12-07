@@ -175,9 +175,14 @@ function init(){
     animate();
 }
 function saveData(){
-    alert("saving position");
-    localStorage["player-position"] = `${player.position.x}~${player.position.y}~${player.position.z}`;
-    localStorage["camera-position"] = `${camera.position.x}~${camera.position.y}~${camera.position.z}`;;
+    if(player.userData.pathPos ==1){
+        alert("saving position");
+        localStorage["player-position"] = `${player.position.x}~${player.position.y}~${player.position.z}`;
+        localStorage["camera-position"] = `${camera.position.x}~${camera.position.y}~${camera.position.z}`;;
+    }
+    else{
+        alert("stand still to save");
+    }
 }
 function loadData(){
     if(localStorage["player-position"] != undefined){

@@ -167,9 +167,34 @@ function init(){
     gameHolder.addEventListener('mousemove', mouseMoveHandler, false);
     document.getElementById("jank-o-meter").addEventListener('change', jank, false);
     document.getElementById("hitbox-toggle").addEventListener('change', hitbox, false);
+    document.getElementById("save-button").addEventListener('click', saveData, false);
+    document.getElementById("load-button").addEventListener('click', loadData, false);
+    document.getElementById("clear-button").addEventListener('click', clearData, false);
 
     window.addEventListener('resize', onWindowResize, false);
     animate();
+}
+function saveData(){
+    alert("saving position");
+    localStorage["player-position"] = `${player.position.x}~${player.position.y}~${player.position.z}`;
+    localStorage["camera-position"] = `${camera.position.x}~${camera.position.y}~${camera.position.z}`;;
+}
+function loadData(){
+    if(localStorage["player-position"] != undefined){
+        let tempP = localStorage["player-position"].split("~");
+        player.position.set(parseFloat(tempP[0]),parseFloat(tempP[1]),parseFloat(tempP[2]));
+        wolf.position.set(parseFloat(tempP[0]),parseFloat(tempP[1]),parseFloat(tempP[2]));
+        playerGhost.position.set(parseFloat(tempP[0]),parseFloat(tempP[1]),parseFloat(tempP[2]));
+        let tempC = localStorage["camera-position"].split("~");
+        camera.position.set(parseFloat(tempC[0]),parseFloat(tempC[1]),parseFloat(tempC[2]));
+        camera.lookAt(player.position);
+    }
+    else{
+        alert("problem: no data");
+    }
+}
+function clearData(){
+    localStorage.clear();
 }
 function jank(event){
     pixelation = document.getElementById('jank-o-meter').value*0.08;
@@ -212,7 +237,7 @@ function mouseUpHandler(event){
             if(!somethingInTheWay(player.position,player.userData.target)){
                 player.userData.path = new THREE.Line3();
                 player.userData.path.set(player.position, player.userData.target);
-                player.userData.step = 0.5/player.userData.path.distance();
+                player.userData.step = 0.3/player.userData.path.distance();
                 player.userData.pathPos = 0;
             }
             
